@@ -1,5 +1,8 @@
+import itertools
 from tkinter import *
 from random import choice
+
+
 class Pole(object): #создаем Класс поля, наследуемся от Object
     def __init__(self,master,row, column): #Инициализация поля. master - окно Tk().
         self.button = Button(master, text = '   ') #Создаем для нашего поля атрибут 'button'
@@ -11,6 +14,19 @@ class Pole(object): #создаем Класс поля, наследуемся 
         self.bg = None #Цвет фона
         self.row = row #Строка
         self.column = column #Столбец
+    
+    def around(self):
+        in_range = lambda index, max_index: 0 <= index <= max_index  # проверка на вхождение в допустимый диапазон
+        diffs = (-1, 0, 1)  # где находятся соседи относительно текущего
+        adjacents = list()  # список соседей
+        for i, j in itertools.product(diffs, diffs):  # https://docs.python.org/3/library/itertools.html#itertools.product
+                if i == j == 0:
+                    continue # исключаем текущий элемент
+                next_row, next_col = self.row + i, self.column + j
+                if in_range(next_row, len(buttons)) and in_range(next_col, len(buttons[0])):
+                    adjacents.append([next_row, next_col])
+        return s
+
     def Around(self):
         """ Возвращает соседние поля """
         if self.row == 0: #Если верхняя строка
@@ -67,7 +83,7 @@ class Pole(object): #создаем Класс поля, наследуемся 
             self.button.configure(text = self.value, fg = self.clr, bg = self.bg) #выводим в текст поля значение
             self.viewed = True
             if self.value == None: #Если вокруг нет мин
-                for k in self.Around():
+                for k in self.around():
                     buttons[k[0]][k[1]].view('<Button-1>') #Открываем все поля вокруг 
     def setFlag(self,event):
         if self.flag == 0 and not self.viewed: #Если поле не открыто и флага нет
@@ -88,13 +104,13 @@ class Pole(object): #создаем Класс поля, наследуемся 
         if q == bombs: #Если кол-во установленных бомб = кол-ву заявленных
             for i in buttons: #Шагаем по строкам
                 for j in i: #Шагаем по полям в строке i
-                    for k in j.Around(): #Шагаем по полям вокруг выбранного поля j
+                    for k in j.around(): #Шагаем по полям вокруг выбранного поля j
                         if buttons[k[0]][k[1]].mine: #Если в одном из полей k мина
                             buttons[buttons.index(i)][i.index(j)].value+=1 #То увеличиваем значение поля j
             return
         a = choice(buttons) #Выбираем рандомную строку
         b = choice(a) #Рандомное поле
-        if [buttons.index(a),a.index(b)] not in mines and [buttons.index(a),a.index(b)] not in self.Around() and [buttons.index(a),a.index(b)] != [self.row,self.column]: #Проверяем, что выбранное поле не выбиралось до этого и, что не является полем на которую мы нажали (или окружающим ее полем)
+        if [buttons.index(a),a.index(b)] not in mines and [buttons.index(a),a.index(b)] not in self.around() and [buttons.index(a),a.index(b)] != [self.row,self.column]: #Проверяем, что выбранное поле не выбиралось до этого и, что не является полем на которую мы нажали (или окружающим ее полем)
             b.mine = True #Ставим мину
             mines.append([buttons.index(a),a.index(b)]) #Добавляем ее в массив 
             self.seter(q+1) #Вызываем установщик, сказав, что еще одна мина уже есть
